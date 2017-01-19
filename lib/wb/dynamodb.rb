@@ -11,5 +11,21 @@ module WelcomeBot
         secret_access_key: WelcomeBot::Config.aws_secret_access_key,
       )
     end
+
+    def table_exists?
+      @dyndb_client.list_tables.table_names.include?('WelcomeBot_Contributor')
+    end
+
+    def run_migration
+      puts "Setting up DynamoDB table. This make take a bit..."
+      migration = Aws::Record::TableMigration.new(WelcomeBot::Contributor, opts = { client: @dyndb_client})
+      migration.create!(
+        provisioned_throughput: {
+          read_capacity_units: 1,
+          write_capacity_units: 1
+        }
+      )
+      migration.wait_until_available
+    end
   end
 end
