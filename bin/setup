@@ -8,5 +8,23 @@ $LOAD_PATH.unshift File.expand_path "../../lib", path
 require "bundler/setup"
 require "wb"
 
+puts "This will create a new DynamoDB table WelcomeBot_Contributors and populate it with all\ncontribributors from the Github org #{WelcomeBot::Config.github_org}. Press any key to continue"
+gets
+
 db = WelcomeBot::DynamoDB.new
 db.run_migration unless db.table_exists?
+
+gh = WelcomeBot::Github.new
+
+puts "\nFetching all users that have opened PRs against the org. This may take a long while..."
+issues = gh.client.org_issues(WelcomeBot::Config.github_org, state: 'all', filter: 'all', sort: 'created').select { |issue| issue[:pull_request] && issue[:repository][:private] == false }
+
+Aws.config.update({
+  region: WelcomeBot::Config.aws_region,
+  credentials: Aws::Credentials.new(WelcomeBot::Config.aws_access_key_id, WelcomeBot::Config.aws_secret_access_key),
+  })
+
+issues.map{|issue| issue['user']['login']}.each do |user|
+  record = WelcomeBot::Contributors.new(username: user)
+  record.save
+end

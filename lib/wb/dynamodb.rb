@@ -13,12 +13,12 @@ module WelcomeBot
     end
 
     def table_exists?
-      @dyndb_client.list_tables.table_names.include?('WelcomeBot_Contributor')
+      @dyndb_client.list_tables.table_names.include?('WelcomeBot_Contributors')
     end
 
     def run_migration
       puts "Setting up DynamoDB table. This make take a bit..."
-      migration = Aws::Record::TableMigration.new(WelcomeBot::Contributor, opts = { client: @dyndb_client})
+      migration = Aws::Record::TableMigration.new(WelcomeBot::Contributors, opts = { client: @dyndb_client})
       migration.create!(
         provisioned_throughput: {
           read_capacity_units: 1,
