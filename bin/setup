@@ -24,7 +24,8 @@ Aws.config.update({
   credentials: Aws::Credentials.new(WelcomeBot::Config.aws_access_key_id, WelcomeBot::Config.aws_secret_access_key),
   })
 
-issues.map{|issue| issue['user']['login']}.each do |user|
+issues.map{|issue| issue['user']['login']}.uniq.each do |user|
+  puts "Adding user #{user}"
   record = WelcomeBot::Contributors.new(username: user)
-  record.save
+  record.save!(opts = {force: true})
 end
