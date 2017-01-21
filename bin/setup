@@ -19,18 +19,18 @@ gh = WelcomeBot::Github.new
 puts "\nFetching all users that have opened PRs against the org. This may take a long while..."
 users = {}
 # fetch any issue ever created that's in any state and don't filter anything
-gh.client.org_issues(WelcomeBot::Config.github_org, state: 'all', filter: 'all', sort: 'created').each do |issue|
+gh.client.org_issues(WelcomeBot::Config.github_org, state: "all", filter: "all", sort: "created").each do |issue|
   # skip the issue if it's not a PR and not in a public repo
   next unless issue[:pull_request] && issue[:repository][:private] == false
 
   # skip the issues if there's an older PR from the same user in our hash already
-  next if users[issue['user']['login']] && ( users[issue['user']['login']]["created_at"] < issue['created_at'] )
+  next if users[issue["user"]["login"]] && ( users[issue["user"]["login"]]["created_at"] < issue["created_at"] )
 
   # add the user to the hash with several attributes
-  users[issue['user']['login']] = {}
-  users[issue['user']['login']]["username"] = issue['user']['login']
-  users[issue['user']['login']]["created_at"] = issue['created_at']
-  users[issue['user']['login']]["url"] = issue['pull_request']['html_url']
+  users[issue["user"]["login"]] = {}
+  users[issue["user"]["login"]]["username"] = issue["user"]["login"]
+  users[issue["user"]["login"]]["created_at"] = issue["created_at"]
+  users[issue["user"]["login"]]["url"] = issue["pull_request"]["html_url"]
 end
 
 Aws.config.update({
@@ -40,6 +40,6 @@ Aws.config.update({
 
 users.each_pair do |user, vals|
   puts "Adding contributor #{user}"
-  record = WelcomeBot::Contributors.new(username: user, first_contribution: vals['created_at'] , pr_url: vals['url'])
-  record.save!(opts = {force: true})
+  record = WelcomeBot::Contributors.new(username: user, first_contribution: vals["created_at"] , pr_url: vals["url"])
+  record.save!(opts = { force: true })
 end
