@@ -1,0 +1,35 @@
+#!/usr/bin/env ruby
+
+require "pathname"
+require "time"
+path = Pathname.new(__FILE__)
+$LOAD_PATH.unshift File.expand_path "../../bundle", path.realpath
+$LOAD_PATH.unshift File.expand_path "../../lib", path
+
+require "bundler/setup"
+require "wb"
+
+db = WelcomeBot::DynamoDB.new
+db.run_migration unless db.table_exists?
+
+gh = WelcomeBot::Github.new
+
+users = {}
+# fetch any issue ever created that's in any state and don't filter anything
+gh.client.org_issues(WelcomeBot::Config.github_org, state: "all", filter: "all", sort: "created").each do |issue|
+  # skip the issue if it's not a PR and not in a public repo
+  next unless issue[:pull_request] && issue[:repository][:private] == false
+
+  # skip the issues if there's an older PR from the same user in our hash already
+  next if users[issue["user"]["login"]] && ( users[issue["user"]["login"]]["created_at"] < issue["created_at"] )
+
+  # add the user to the hash with several attributes
+  users[issue["user"]["login"]] = {}
+  users[issue["user"]["login"]]["username"] = issue["user"]["login"]
+  users[issue["user"]["login"]]["created_at"] = issue["created_at"]
+  users[issue["user"]["login"]]["url"] = issue["pull_request"]["html_url"]
+end
+
+users.each_pair do |user, vals|
+  puts "#{user}, #{vals['created_at'].to_date}, #{vals['url']}"
+end
