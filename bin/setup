@@ -17,15 +17,29 @@ db.run_migration unless db.table_exists?
 gh = WelcomeBot::Github.new
 
 puts "\nFetching all users that have opened PRs against the org. This may take a long while..."
-issues = gh.client.org_issues(WelcomeBot::Config.github_org, state: 'all', filter: 'all', sort: 'created').select { |issue| issue[:pull_request] && issue[:repository][:private] == false }
+users = {}
+# fetch any issue ever created that's in any state and don't filter anything
+gh.client.org_issues(WelcomeBot::Config.github_org, state: 'all', filter: 'all', sort: 'created').each do |issue|
+  # skip the issue if it's not a PR and not in a public repo
+  next unless issue[:pull_request] && issue[:repository][:private] == false
+
+  # skip the issues if there's an older PR from the same user in our hash already
+  next if users[issue['user']['login']] && ( users[issue['user']['login']]["created_at"] < issue['created_at'] )
+
+  # add the user to the hash with several attributes
+  users[issue['user']['login']] = {}
+  users[issue['user']['login']]["username"] = issue['user']['login']
+  users[issue['user']['login']]["created_at"] = issue['created_at']
+  users[issue['user']['login']]["url"] = issue['pull_request']['html_url']
+end
 
 Aws.config.update({
   region: WelcomeBot::Config.aws_region,
   credentials: Aws::Credentials.new(WelcomeBot::Config.aws_access_key_id, WelcomeBot::Config.aws_secret_access_key),
   })
 
-issues.map{|issue| issue['user']['login']}.uniq.each do |user|
-  puts "Adding user #{user}"
-  record = WelcomeBot::Contributors.new(username: user)
+users.each_pair do |user, vals|
+  puts "Adding contributor #{user}"
+  record = WelcomeBot::Contributors.new(username: user, first_contribution: vals['created_at'] , pr_url: vals['url'])
   record.save!(opts = {force: true})
 end
