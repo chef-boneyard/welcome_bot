@@ -8,41 +8,69 @@ $LOAD_PATH.unshift File.expand_path "../../lib", path
 require "bundler/setup"
 require "wb"
 
+def create_tables
+  # create the tables unless they already exist
+  db_conn = WelcomeBot::DynamoDB.new
+  [WelcomeBot::Contributors, WelcomeBot::Reporters].each do |db|
+    db_conn.run_migration(db) unless db_conn.table_exists?(db)
+  end
+end
+
+def fetch_gh_data(issue_type)
+  gh = WelcomeBot::Github.new
+
+  puts "\nFetching all users that have opened issues of type '#{issue_type}' against the org #{WelcomeBot::Config.github_org}. This may take a long while..."
+  users = {}
+  # fetch any issue ever created that's in any state and don't filter anything
+  gh.client.org_issues(WelcomeBot::Config.github_org, state: "all", filter: "all", sort: "created").each do |issue|
+
+    # we're not doing this for private repos
+    next if issue[:repository][:private] == true
+
+    # skip if this is the wrong issue type
+    if issue_type == "pull_request"
+      next unless issue[:pull_request]
+    else
+      next if issue[:pull_request]
+    end
+
+    # skip the issues if there's an older PR from the same user in our hash already
+    next if users[issue["user"]["login"]] && ( users[issue["user"]["login"]]["created_at"] < issue["created_at"] )
+
+    # add the user to the hash with several attributes
+    users[issue["user"]["login"]] = {}
+    users[issue["user"]["login"]]["username"] = issue["user"]["login"]
+    users[issue["user"]["login"]]["created_at"] = issue["created_at"]
+    users[issue["user"]["login"]]["url"] = issue["html_url"]
+  end
+
+
+
+  users
+end
+
+def add_users_to_db(users, db)
+  Aws.config.update({
+    region: WelcomeBot::Config.aws_region,
+    credentials: Aws::Credentials.new(WelcomeBot::Config.aws_access_key_id, WelcomeBot::Config.aws_secret_access_key),
+    })
+
+  users.each_pair do |user, vals|
+    # require 'pry'
+    # binding.pry
+    puts "Adding #{user} to #{db.name.gsub('::', '_')}"
+    record = db.new(username: user, interaction_date: vals["created_at"] , url: vals["url"])
+    record.save!(opts = { force: true })
+  end
+end
+
 puts "\nWelcomeBot Setup\n\nThis will create the DynamoDB tables WelcomeBot_Contributors & WelcomeBot_Reporters and populate them with all\nusers that have opened issues or PRs against repositories if the Github org #{WelcomeBot::Config.github_org}.\n\nPress any key to continue"
-gets
+gets # causes a pause
 
-# create the databases unless they already exist
-db_conn = WelcomeBot::DynamoDB.new
-[WelcomeBot::Contributors, WelcomeBot::Reporters].each do |db|
-  db_conn.run_migration(db) unless db_conn.table_exists?(db)
-end
+create_tables
 
-gh = WelcomeBot::Github.new
+pr_users = fetch_gh_data("pull_request")
+issue_users = fetch_gh_data("issue")
 
-puts "\nFetching all users that have opened PRs against the org. This may take a long while..."
-users = {}
-# fetch any issue ever created that's in any state and don't filter anything
-gh.client.org_issues(WelcomeBot::Config.github_org, state: "all", filter: "all", sort: "created").each do |issue|
-  # skip the issue if it's not a PR and not in a public repo
-  next unless issue[:pull_request] && issue[:repository][:private] == false
-
-  # skip the issues if there's an older PR from the same user in our hash already
-  next if users[issue["user"]["login"]] && ( users[issue["user"]["login"]]["created_at"] < issue["created_at"] )
-
-  # add the user to the hash with several attributes
-  users[issue["user"]["login"]] = {}
-  users[issue["user"]["login"]]["username"] = issue["user"]["login"]
-  users[issue["user"]["login"]]["created_at"] = issue["created_at"]
-  users[issue["user"]["login"]]["url"] = issue["pull_request"]["html_url"]
-end
-
-Aws.config.update({
-  region: WelcomeBot::Config.aws_region,
-  credentials: Aws::Credentials.new(WelcomeBot::Config.aws_access_key_id, WelcomeBot::Config.aws_secret_access_key),
-  })
-
-users.each_pair do |user, vals|
-  puts "Adding contributor #{user}"
-  record = WelcomeBot::Contributors.new(username: user, interaction_date: vals["created_at"] , url: vals["url"])
-  record.save!(opts = { force: true })
-end
+add_users_to_db(pr_users, WelcomeBot::Contributors)
+add_users_to_db(issue_users, WelcomeBot::Reporters)
