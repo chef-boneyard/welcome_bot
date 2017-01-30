@@ -54,8 +54,6 @@ def add_users_to_db(users, db)
     })
 
   users.each_pair do |user, vals|
-    # require 'pry'
-    # binding.pry
     puts "Adding #{user} to #{db.name.gsub('::', '_')}"
     record = db.new(username: user, interaction_date: vals["created_at"] , url: vals["url"])
     record.save!(opts = { force: true })
