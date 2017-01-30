@@ -44,8 +44,6 @@ def fetch_gh_data(issue_type)
     users[issue["user"]["login"]]["url"] = issue["html_url"]
   end
 
-
-
   users
 end
 
