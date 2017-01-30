@@ -3,7 +3,7 @@ github_access_token: ''
 github_secret_token: ''
 github_org: 'chef-cookbooks'
 pr_welcome_message: Hey there. It's great to see you're interested in a chef project. We're glad to have you as a contributor. Since this is your first time contributing I'm here to offer you a bit of extra help.
-issue_welcome_message: ''
+issue_welcome_message: Hey there. I see that this is the first issue you've opened against a chef project. Since this is your first time I'm here to offer you a bit of extra help.
 aws_region: 'us-west-2'
 aws_access_key_id: ''
 aws_secret_access_key: ''
