@@ -7,7 +7,7 @@ require "active_model"
 require "sinatra"
 require "wb/version"
 require "wb/config"
-require "wb/contributors"
+require "wb/databases"
 require "wb/dynamodb"
 require "wb/github"
 

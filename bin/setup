@@ -8,11 +8,14 @@ $LOAD_PATH.unshift File.expand_path "../../lib", path
 require "bundler/setup"
 require "wb"
 
-puts "This will create a new DynamoDB table WelcomeBot_Contributors and populate it with all\ncontribributors from the Github org #{WelcomeBot::Config.github_org}. Press any key to continue"
+puts "\nWelcomeBot Setup\n\nThis will create the DynamoDB tables WelcomeBot_Contributors & WelcomeBot_Reporters and populate them with all\nusers that have opened issues or PRs against repositories if the Github org #{WelcomeBot::Config.github_org}.\n\nPress any key to continue"
 gets
 
-db = WelcomeBot::DynamoDB.new
-db.run_migration unless db.table_exists?
+# create the databases unless they already exist
+db_conn = WelcomeBot::DynamoDB.new
+[WelcomeBot::Contributors, WelcomeBot::Reporters].each do |db|
+  db_conn.run_migration(db) unless db_conn.table_exists?(db)
+end
 
 gh = WelcomeBot::Github.new
 
