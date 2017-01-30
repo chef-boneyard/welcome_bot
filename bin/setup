@@ -43,6 +43,6 @@ Aws.config.update({
 
 users.each_pair do |user, vals|
   puts "Adding contributor #{user}"
-  record = WelcomeBot::Contributors.new(username: user, first_contribution: vals["created_at"] , pr_url: vals["url"])
+  record = WelcomeBot::Contributors.new(username: user, interaction_date: vals["created_at"] , url: vals["url"])
   record.save!(opts = { force: true })
 end

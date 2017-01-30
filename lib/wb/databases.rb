@@ -3,15 +3,15 @@ module WelcomeBot
     include Aws::Record
 
     string_attr     :username, hash_key: true
-    datetime_attr   :first_contribution
-    string_attr     :pr_url
+    datetime_attr   :interaction_date
+    string_attr     :url
   end
 
   class Reporters
     include Aws::Record
 
     string_attr     :username, hash_key: true
-    datetime_attr   :first_issue
-    string_attr     :issue_url
+    datetime_attr   :interaction_date
+    string_attr     :url
   end
 end
