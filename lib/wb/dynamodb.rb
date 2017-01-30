@@ -13,7 +13,7 @@ module WelcomeBot
     end
 
     def table_exists?(db_classname)
-      @dyndb_client.list_tables.table_names.include?(db_classname.name.gsub('::','_'))
+      @dyndb_client.list_tables.table_names.include?(db_classname.name.gsub("::", "_"))
     end
 
     def run_migration(db_class)
