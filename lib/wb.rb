@@ -59,7 +59,7 @@ module WelcomeBot
       issue = JSON.parse(@payload_body)
       if issue["action"] == "opened"
         puts "Processing #{issue["issue"]["html_url"]}"
-        WelcomeBot::Github.add_comment(issue["issue"]["head"]["repo"]["full_name"], issue["number"], WelcomeBot::Config.issue_welcome_message)
+        WelcomeBot::Github.add_comment(issue["repository"]["full_name"], issue["number"], WelcomeBot::Config.issue_welcome_message)
         WelcomeBot::DynamoDB.add_record_unless_present(WelcomeBot::Reporters, { :username => issue["issue"]["user"]["login"], :url => issue["issue"]["html_url"] })
       end
     end
