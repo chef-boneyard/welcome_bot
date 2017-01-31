@@ -10,9 +10,8 @@ require "wb"
 
 def create_tables
   # create the tables unless they already exist
-  db_conn = WelcomeBot::DynamoDB.new
-  [WelcomeBot::Contributors, WelcomeBot::Reporters].each do |db|
-    db_conn.run_migration(db) unless db_conn.table_exists?(db)
+  [WelcomeBot::Contributors, WelcomeBot::Reporters].each do |table|
+    WelcomeBot::DynamoDB.run_migration(table)
   end
 end
 
@@ -47,16 +46,9 @@ def fetch_gh_data(issue_type)
   users
 end
 
-def add_users_to_db(users, db)
-  Aws.config.update({
-    region: WelcomeBot::Config.aws_region,
-    credentials: Aws::Credentials.new(WelcomeBot::Config.aws_access_key_id, WelcomeBot::Config.aws_secret_access_key),
-    })
-
+def add_users_to_table(users, db)
   users.each_pair do |user, vals|
-    puts "Adding #{user} to #{db.name.gsub('::', '_')}"
-    record = db.new(username: user, interaction_date: vals["created_at"] , url: vals["url"])
-    record.save!(opts = { force: true })
+    WelcomeBot::DynamoDB.add_record(db, {username: user, interaction_date: vals["created_at"] , url: vals["url"]})
   end
 end
 
@@ -68,5 +60,5 @@ create_tables
 pr_users = fetch_gh_data("pull_request")
 issue_users = fetch_gh_data("issue")
 
-add_users_to_db(pr_users, WelcomeBot::Contributors)
-add_users_to_db(issue_users, WelcomeBot::Reporters)
+add_users_to_table(pr_users, WelcomeBot::Contributors)
+add_users_to_table(issue_users, WelcomeBot::Reporters)

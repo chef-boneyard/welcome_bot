@@ -9,8 +9,7 @@ $LOAD_PATH.unshift File.expand_path "../../lib", path
 require "bundler/setup"
 require "wb"
 
-db = WelcomeBot::DynamoDB.new
-db.run_migration unless db.table_exists?
+WelcomeBot::DynamoDB.run_migration unless WelcomeBot::DynamoDB.table_exists?
 
 gh = WelcomeBot::Github.new
 

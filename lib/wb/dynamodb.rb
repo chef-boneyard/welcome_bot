@@ -1,10 +1,19 @@
 module WelcomeBot
+  # our all in one interface to DynamoDB. This is actually part aws-sdk
+  # and part aws-record
   class DynamoDB
-    def initialize
-      @dyndb_client = setup_connection
+
+    def self.connection
+      @@conn ||= setup_connection
     end
 
-    def setup_connection
+    def self.setup_connection
+      # This config is for aws-record
+      Aws.config.update({
+        region: WelcomeBot::Config.aws_region,
+        credentials: Aws::Credentials.new(WelcomeBot::Config.aws_access_key_id, WelcomeBot::Config.aws_secret_access_key),
+        })
+
       Aws::DynamoDB::Client.new(
         region: WelcomeBot::Config.aws_region,
         access_key_id: WelcomeBot::Config.aws_access_key_id,
@@ -12,13 +21,25 @@ module WelcomeBot
       )
     end
 
-    def table_exists?(db_classname)
-      @dyndb_client.list_tables.table_names.include?(db_classname.name.gsub("::", "_"))
+    def self.table_exists?(table_class)
+      connection.list_tables.table_names.include?(table_class.name.gsub("::", "_"))
     end
 
-    def run_migration(db_class)
-      puts "Setting up DynamoDB table #{db_class}. This make take a bit..."
-      migration = Aws::Record::TableMigration.new(db_class, opts = { client: @dyndb_client })
+    def self.add_record(table_class, record)
+      puts "Adding record #{record} to #{table_class.name.gsub('::', '_')}"
+      record = table_class.new(record)
+      record.save!(opts = { force: true })
+    end
+
+    def self.run_migration(table_class)
+      # don't try to migration a table that already exists. This fails
+      if table_exists?(table_class)
+        puts "Table #{table_class.name.gsub("::", '_')} already exists. Skipping migration."
+        return
+      end
+
+      puts "Setting up DynamoDB table #{table_class}. This make take a bit..."
+      migration = Aws::Record::TableMigration.new(table_class, opts = { client: connection })
       migration.create!(
         provisioned_throughput: {
           read_capacity_units: 1,
