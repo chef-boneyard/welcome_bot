@@ -1,7 +1,6 @@
 module WelcomeBot
   class Config
     CONFIG_OPTIONS = %w{
-      github_login
       github_access_token
       github_secret_token
       github_org
