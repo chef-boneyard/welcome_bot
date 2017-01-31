@@ -1,2 +1,1 @@
-Cleanup the AWS auth logic in the setup bin
 Fix setup bin to only query github issue data from the API once
