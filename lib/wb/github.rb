@@ -48,5 +48,9 @@ module WelcomeBot
 
       users
     end
+
+    def self.add_comment(repo_name, issue_number, comment_text)
+      connection.add_comment(repo_name, issue_number, comment_text)
+    end
   end
 end
