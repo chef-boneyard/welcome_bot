@@ -1,6 +1,6 @@
 # WelcomeBot
 
-The welcome bot comments on the PRs of first time committers at a Github organization level. It does so by keeping a running list of the user names of all users that have opened a PR across a github organization. This list is stored in AWS DynamoDB so that no state is stored in the application itself.
+The welcome bot comments on the Github Issues and PRs of first time users at a organization level. It does so by keeping a running list of the user names of all users that have opened a PRs and Issues against a repo in your organization. Each list is stored in AWS DynamoDB so that no state is stored in the application itself.
 
 ## Configuration
 
