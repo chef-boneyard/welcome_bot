@@ -54,7 +54,7 @@ module WelcomeBot
       end
     end
 
-    post "/payload", event_type: "issue" do
+    post "/payload", event_type: "issues" do
       issue = JSON.parse(@payload_body)
       repo_id = pr["repository"]["id"]
       if issue["action"] == "opened"
