@@ -3,6 +3,7 @@ module WelcomeBot
   # and part aws-record
   class DynamoDB
     require "aws-sdk"
+    require "date"
 
     def self.connection
       @@conn ||= Aws::DynamoDB::Client.new
@@ -12,10 +13,18 @@ module WelcomeBot
       connection.list_tables.table_names.include?(table_class.name.gsub("::", "_"))
     end
 
+    # add the record to dynamodb, but don't overwrite records with an older date.
+    # this allows you to run setup multiple times with multiple orgs and keep
+    # the oldest PR / Issue a user filed.
     def self.add_record(table_class, record)
-      puts "Adding record #{record} to #{table_class.name.gsub('::', '_')}"
-      record = table_class.new(record)
-      record.save!(opts = { force: true })
+      old_record = table_class.find(username: record[:username])
+      if old_record && (record[:interaction_date].to_datetime >= old_record.interaction_date)
+        puts "#{record[:username]} interaction date not older than previous interaction date of #{old_record.interaction_date}. Keeping the old record."
+      else
+        puts "Adding record #{record} to #{table_class.name.gsub('::', '_')}"
+        record = table_class.new(record)
+        record.save!(opts = { force: true })
+      end
     end
 
     def self.add_record_unless_present(table_class, record)
