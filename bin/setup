@@ -48,7 +48,7 @@ end
 
 def add_users_to_table(users, db)
   users.each_pair do |user, vals|
-    WelcomeBot::DynamoDB.add_record(db, {username: user, interaction_date: vals["created_at"] , url: vals["url"]})
+    WelcomeBot::DynamoDB.add_record(db, { username: user, interaction_date: vals["created_at"] , url: vals["url"] })
   end
 end
 

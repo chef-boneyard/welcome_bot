@@ -1,7 +1,6 @@
 require "octokit"
 require "faraday-http-cache"
 require "openssl"
-require "aws-sdk"
 require "aws-record"
 require "sinatra"
 require "wb/version"
@@ -50,22 +49,18 @@ module WelcomeBot
     end
 
     post "/payload", event_type: "pull_request" do
-      pr = JSON.parse(@payload_body)
-      repo_id = pr["repository"]["id"]
-      if pr["action"] == "opened"
-        puts "Processing #{pr['pull_request']['head']['repo']['name']} ##{pr['number']}"
-        WelcomeBot::Github.apply_comment(repo_id, pr["number"], WelcomeBot::Config.pr_welcome_message )
-        WelcomeBot::Dynamodb.add_user("WelcomeBot_Contributors", pr["pull_request"]["user"]["login"], pr["pull_request"]["url"])
+      issue = JSON.parse(@payload_body)
+      if issue["action"] == "opened"
+        puts "Processing #{issue["pull_request"]["url"]}"
+        WelcomeBot::DynamoDB.add_record_unless_present(WelcomeBot::Contributors, { :username => issue["pull_request"]["user"]["login"], :url => issue["pull_request"]["html_url"] })
       end
     end
 
     post "/payload", event_type: "issues" do
       issue = JSON.parse(@payload_body)
-      repo_id = pr["repository"]["id"]
       if issue["action"] == "opened"
-        puts "Processing #{issue['pull_request']['head']['repo']['name']} ##{issue['number']}"
-        WelcomeBot::Github.apply_comment(repo_id, issue["number"], WelcomeBot::Config.issue_welcome_message )
-        WelcomeBot::Dynamodb.add_user("WelcomeBot_Reporters", pr["issue"]["user"]["login"], pr["issue"]["url"])
+        puts "Processing #{issue["issue"]["url"]}"
+        WelcomeBot::DynamoDB.add_record_unless_present(WelcomeBot::Reporters, { :username => issue["issue"]["user"]["login"], :url => issue["issue"]["html_url"] })
       end
     end
   end

@@ -2,6 +2,7 @@ module WelcomeBot
   # our all in one interface to DynamoDB. This is actually part aws-sdk
   # and part aws-record
   class DynamoDB
+    require "aws-sdk"
 
     def self.connection
       @@conn ||= Aws::DynamoDB::Client.new
@@ -15,6 +16,14 @@ module WelcomeBot
       puts "Adding record #{record} to #{table_class.name.gsub('::', '_')}"
       record = table_class.new(record)
       record.save!(opts = { force: true })
+    end
+
+    def self.add_record_unless_present(table_class, record)
+      if table_class.find(username: record[:username])
+        puts "Record for user #{record[:username]} already exists in #{table_class.name.gsub('::', '_')}. Doing nothing."
+      else
+        add_record(table_class, record)
+      end
     end
 
     def self.run_migration(table_class)
