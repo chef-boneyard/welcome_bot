@@ -4,21 +4,7 @@ module WelcomeBot
   class DynamoDB
 
     def self.connection
-      @@conn ||= setup_connection
-    end
-
-    def self.setup_connection
-      # This config is for aws-record
-      Aws.config.update({
-        region: WelcomeBot::Config.aws_region,
-        credentials: Aws::Credentials.new(WelcomeBot::Config.aws_access_key_id, WelcomeBot::Config.aws_secret_access_key),
-        })
-
-      Aws::DynamoDB::Client.new(
-        region: WelcomeBot::Config.aws_region,
-        access_key_id: WelcomeBot::Config.aws_access_key_id,
-        secret_access_key: WelcomeBot::Config.aws_secret_access_key
-      )
+      @@conn ||= Aws::DynamoDB::Client.new
     end
 
     def self.table_exists?(table_class)

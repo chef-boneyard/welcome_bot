@@ -10,6 +10,11 @@ require "wb/tables"
 require "wb/dynamodb"
 require "wb/github"
 
+Aws.config.update({
+  region: WelcomeBot::Config.aws_region,
+  credentials: Aws::Credentials.new(WelcomeBot::Config.aws_access_key_id, WelcomeBot::Config.aws_secret_access_key),
+  })
+
 module WelcomeBot
   class Server < Sinatra::Base
     before do
