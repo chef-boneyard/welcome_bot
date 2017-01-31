@@ -15,37 +15,6 @@ def create_tables
   end
 end
 
-def fetch_gh_data(issue_type)
-  gh = WelcomeBot::Github.new
-
-  puts "\nFetching all users that have opened issues of type '#{issue_type}' against the org #{WelcomeBot::Config.github_org}. This may take a long while..."
-  users = {}
-  # fetch any issue ever created that's in any state and don't filter anything
-  gh.client.org_issues(WelcomeBot::Config.github_org, state: "all", filter: "all", sort: "created").each do |issue|
-
-    # we're not doing this for private repos
-    next if issue[:repository][:private] == true
-
-    # skip if this is the wrong issue type
-    if issue_type == "pull_request"
-      next unless issue[:pull_request]
-    else
-      next if issue[:pull_request]
-    end
-
-    # skip the issues if there's an older PR from the same user in our hash already
-    next if users[issue["user"]["login"]] && ( users[issue["user"]["login"]]["created_at"] < issue["created_at"] )
-
-    # add the user to the hash with several attributes
-    users[issue["user"]["login"]] = {}
-    users[issue["user"]["login"]]["username"] = issue["user"]["login"]
-    users[issue["user"]["login"]]["created_at"] = issue["created_at"]
-    users[issue["user"]["login"]]["url"] = issue["html_url"]
-  end
-
-  users
-end
-
 def add_users_to_table(users, db)
   users.each_pair do |user, vals|
     WelcomeBot::DynamoDB.add_record(db, { username: user, interaction_date: vals["created_at"] , url: vals["url"] })
@@ -57,8 +26,8 @@ gets # causes a pause
 
 create_tables
 
-pr_users = fetch_gh_data("pull_request")
-issue_users = fetch_gh_data("issue")
+pr_users = WelcomeBot::Github.fetch_issues("pull_request")
+issue_users = WelcomeBot::Github.fetch_issues("issue")
 
 add_users_to_table(pr_users, WelcomeBot::Contributors)
 add_users_to_table(issue_users, WelcomeBot::Reporters)
