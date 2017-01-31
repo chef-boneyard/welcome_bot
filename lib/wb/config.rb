@@ -4,7 +4,8 @@ module WelcomeBot
       github_access_token
       github_secret_token
       github_org
-      welcome_message
+      pr_welcome_message
+      issue_welcome_message
       aws_region
       aws_access_key_id
       aws_secret_access_key
