@@ -1,5 +1,3 @@
-require "octokit"
-require "faraday-http-cache"
 require "openssl"
 require "aws-record"
 require "sinatra"
