@@ -10,16 +10,13 @@ require "bundler/setup"
 require "wb"
 
 def csv_output(users)
-  users.each_pair do |user, vals|
-    puts "#{user}, #{vals['created_at'].to_date}, #{vals['url']}"
+  users.each do |record|
+    puts "#{record['username']}, #{record['interaction_date'].to_date}, #{record['url']}"
   end
 end
 
-pr_users = WelcomeBot::Github.fetch_issues("pull_request")
-issue_users = WelcomeBot::Github.fetch_issues("issue")
+puts "\nPull Requests:"
+csv_output(WelcomeBot::DynamoDB.return_all_records(WelcomeBot::Contributors))
 
 puts "\nIsssues:"
-csv_output(issue_users)
-
-puts "\nPull Requests:"
-csv_output(pr_users)
+csv_output(WelcomeBot::DynamoDB.return_all_records(WelcomeBot::Reporters))

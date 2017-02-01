@@ -35,6 +35,18 @@ module WelcomeBot
       end
     end
 
+    def self.return_all_records(table_class)
+      users = []
+      table_class.scan.select do |val|
+        users << {
+          "username" => val.username,
+          "interaction_date" => val.interaction_date,
+          "url" => val.url,
+        }
+      end
+      users
+    end
+
     def self.run_migration(table_class)
       # don't try to migration a table that already exists. This fails
       if table_exists?(table_class)
