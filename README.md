@@ -14,6 +14,8 @@ For information on contributing to this project see <https://github.com/chef/che
 
 WelcomeBot functions using either Github repo level webhook, or org level webhooks. At current the setup binary does not configure webhooks, which allows you to chose the hook configuration that works best for you. You can setup an organization hook via the organization setting page as follows:
 
+![setup image](https://raw.githubusercontent.com/chef/welcomebot/master/setup.png)
+
 ## License
 
 - Author:: Tim Smith ([tsmith@chef.io](mailto:tsmith@chef.io))
