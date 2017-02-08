@@ -1,6 +1,6 @@
 # WelcomeBot
 
-The welcome bot comments on the Github Issues and PRs of first time users at a organization level. It does so by keeping a running list of the user names of all users that have opened a PRs and Issues against a repo in your organization. Each list is stored in AWS DynamoDB so that no state is stored in the application itself.
+The welcome bot comments on the Github Issues and PRs of first time users at a organization level. It does so by keeping a running list of the github usernames of all users that have opened a PRs and Issues against a repo in your organization. Each list is stored in AWS DynamoDB so that no state is stored in the application itself.
 
 ## Configuration
 
@@ -9,6 +9,10 @@ WelcomeBot loads configuration via either a YAML config or environmental variabl
 ## Contributing
 
 For information on contributing to this project see <https://github.com/chef/chef/blob/master/CONTRIBUTING.md>
+
+## Setup
+
+WelcomeBot functions using either Github repo level webhook, or org level webhooks. At current the setup binary does not configure webhooks, which allows you to chose the hook configuration that works best for you. You can setup an organization hook via the organization setting page as follows:
 
 ## License
 
