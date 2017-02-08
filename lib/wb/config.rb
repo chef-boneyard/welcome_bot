@@ -9,6 +9,7 @@ module WelcomeBot
       aws_region
       aws_access_key_id
       aws_secret_access_key
+      port
     }.freeze
 
     CONFIG_OPTIONS.each do |config_opt|

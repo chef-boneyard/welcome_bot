@@ -21,6 +21,8 @@ module WelcomeBot
       return halt 500, "Signatures didn't match!" unless Rack::Utils.secure_compare(check_signature, request_signature)
     end
 
+    set :port, WelcomeBot::Config.port.to_i
+
     set(:event_type) do |type|
       condition { request.env["HTTP_X_GITHUB_EVENT"] == type }
     end

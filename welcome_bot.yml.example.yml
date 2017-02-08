@@ -6,3 +6,4 @@ issue_welcome_message: Hey there. I see that this is the first issue you've open
 aws_region: 'us-west-2'
 aws_access_key_id: ''
 aws_secret_access_key: ''
+port: 8080
