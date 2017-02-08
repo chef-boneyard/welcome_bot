@@ -18,5 +18,5 @@ end
 puts "\nPull Requests:"
 csv_output(WelcomeBot::DynamoDB.return_all_records(WelcomeBot::Contributors))
 
-puts "\nIsssues:"
+puts "\nIssues:"
 csv_output(WelcomeBot::DynamoDB.return_all_records(WelcomeBot::Reporters))
