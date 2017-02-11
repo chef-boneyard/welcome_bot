@@ -42,7 +42,7 @@ module WelcomeBot
       puts "Processing #{issue["issue"]["html_url"]}"
 
       # if we already have a record then log and do nothing
-      if WelcomeBot::DynamoDB.record_exists?(issue["issue"]["user"]["login"], issue["repository"]["owner"]["login"])
+      if WelcomeBot::DynamoDB.record_exists?(WelcomeBot::Contributors, issue["issue"]["user"]["login"], issue["repository"]["owner"]["login"])
         puts "Previous interaction found for user #{issue["issue"]["user"]["login"]} against #{issue["repository"]["owner"]["login"]}. Skipping."
       else
         puts "Processing #{issue["pull_request"]["html_url"]}"
@@ -59,7 +59,7 @@ module WelcomeBot
       puts "Processing #{issue["issue"]["html_url"]}"
 
       # if we already have a record then log and do nothing
-      if WelcomeBot::DynamoDB.record_exists?(issue["issue"]["user"]["login"], issue["repository"]["owner"]["login"])
+      if WelcomeBot::DynamoDB.record_exists?(WelcomeBot::Reporters, issue["issue"]["user"]["login"], issue["repository"]["owner"]["login"])
         puts "Previous interaction found for user #{issue["issue"]["user"]["login"]} against #{issue["repository"]["owner"]["login"]}. Skipping."
       else
         puts "Processing #{issue["issue"]["html_url"]}"

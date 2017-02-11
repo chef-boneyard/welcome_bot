@@ -15,6 +15,11 @@ module WelcomeBot
       connection.list_tables.table_names.include?(table_class.name.gsub("::", "_"))
     end
 
+    def self.record_exists?(table_class, username, org)
+      db_record = table_class.find(username: username)
+      return true if db_record && JSON.parse(db_record.interactions)[org]
+    end
+
     # add the record to dynamodb. Examines the interactions field and adds in new orgs as necessary
     #record_data format: { :username => string,
     #                      :org => string,
