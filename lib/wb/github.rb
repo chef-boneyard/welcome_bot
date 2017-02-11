@@ -20,11 +20,11 @@ module WelcomeBot
       connection
     end
 
-    def self.fetch_issues(issue_type)
-      puts "\nFetching all users that have opened issues of type '#{issue_type}' against the org #{WelcomeBot::Config.github_org}. This may take a long while..."
+    def self.fetch_issues(issue_type, org)
+      puts "\nFetching all users that have opened issues of type '#{issue_type}' against the org #{org}. This may take a long while..."
       users = {}
       # fetch any issue ever created that's in any state and don't filter anything
-      connection.org_issues(WelcomeBot::Config.github_org, state: "all", filter: "all", sort: "created").each do |issue|
+      connection.org_issues(org, state: "all", filter: "all", sort: "created").each do |issue|
 
         # we're not doing this for private repos
         next if issue[:repository][:private] == true

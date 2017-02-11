@@ -15,19 +15,32 @@ def create_tables
   end
 end
 
-def add_users_to_table(users, db)
+def add_users_to_table(users, db, org)
   users.each_pair do |user, vals|
-    WelcomeBot::DynamoDB.add_record(db, { username: user, interaction_date: vals["created_at"] , url: vals["url"] })
+    WelcomeBot::DynamoDB.add_record(db, { username: user, org: org, date: vals["created_at"] , url: vals["url"] })
   end
 end
 
-puts "\nWelcomeBot Setup\n\nThis will create the DynamoDB tables WelcomeBot_Contributors & WelcomeBot_Reporters and populate them with all\nusers that have opened issues or PRs against repositories if the Github org #{WelcomeBot::Config.github_org}.\n\nPress any key to continue"
-gets # causes a pause
+def prompt_user(message)
+  print message + " (y/n) "
+  response = gets
+  return true if response.chomp == 'y'
+  false
+end
 
-create_tables
+puts "\nWelcomeBot Setup\n\nThis will get you ready to start using WelcomeBot.\n\n"
 
-pr_users = WelcomeBot::Github.fetch_issues("pull_request")
-issue_users = WelcomeBot::Github.fetch_issues("issue")
+create_tables if prompt_user("Would you like to create the DynamoDB tables WelcomeBot_Contributors & WelcomeBot_Reporters?")
 
-add_users_to_table(pr_users, WelcomeBot::Contributors)
-add_users_to_table(issue_users, WelcomeBot::Reporters)
+if prompt_user("Would you like to backfill existing PRs / Issues into the DynamoDB tables?")
+
+  print "What Github org would you like to backfill?: "
+  org = gets
+  org.chomp!
+
+  pr_users = WelcomeBot::Github.fetch_issues("pull_request", org)
+  issue_users = WelcomeBot::Github.fetch_issues("issue", org)
+
+  add_users_to_table(pr_users, WelcomeBot::Contributors, org)
+  add_users_to_table(issue_users, WelcomeBot::Reporters, org)
+end

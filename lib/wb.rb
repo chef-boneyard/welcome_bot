@@ -1,4 +1,5 @@
 require "openssl"
+require "date"
 require "aws-record"
 require "sinatra"
 require "wb/version"
@@ -35,19 +36,35 @@ module WelcomeBot
 
     post "/payload", event_type: "pull_request" do
       issue = JSON.parse(@payload_body)
-      if issue["action"] == "opened"
+      # we only care about issue open events
+      return unless issue["action"] == "opened"
+
+      puts "Processing #{issue["issue"]["html_url"]}"
+
+      # if we already have a record then log and do nothing
+      if WelcomeBot::DynamoDB.record_exists?(issue["issue"]["user"]["login"], issue["repository"]["owner"]["login"])
+        puts "Previous interaction found for user #{issue["issue"]["user"]["login"]} against #{issue["repository"]["owner"]["login"]}. Skipping."
+      else
         puts "Processing #{issue["pull_request"]["html_url"]}"
         WelcomeBot::Github.add_comment(issue["pull_request"]["head"]["repo"]["full_name"], issue["number"], WelcomeBot::Config.pr_welcome_message)
-        WelcomeBot::DynamoDB.add_record_unless_present(WelcomeBot::Contributors, { :username => issue["pull_request"]["user"]["login"], :url => issue["pull_request"]["html_url"] })
+        WelcomeBot::DynamoDB.add_record(WelcomeBot::Contributors, { :username => issue["pull_request"]["user"]["login"], :org => issue["repository"]["owner"]["login"], :date => DateTime.now, :url => issue["pull_request"]["html_url"] })
       end
     end
 
     post "/payload", event_type: "issues" do
       issue = JSON.parse(@payload_body)
-      if issue["action"] == "opened"
+      # we only care about issue open events
+      return unless issue["action"] == "opened"
+
+      puts "Processing #{issue["issue"]["html_url"]}"
+
+      # if we already have a record then log and do nothing
+      if WelcomeBot::DynamoDB.record_exists?(issue["issue"]["user"]["login"], issue["repository"]["owner"]["login"])
+        puts "Previous interaction found for user #{issue["issue"]["user"]["login"]} against #{issue["repository"]["owner"]["login"]}. Skipping."
+      else
         puts "Processing #{issue["issue"]["html_url"]}"
         WelcomeBot::Github.add_comment(issue["repository"]["full_name"], issue["number"], WelcomeBot::Config.issue_welcome_message)
-        WelcomeBot::DynamoDB.add_record_unless_present(WelcomeBot::Reporters, { :username => issue["issue"]["user"]["login"], :url => issue["issue"]["html_url"] })
+        WelcomeBot::DynamoDB.add_record(WelcomeBot::Reporters, { :username => issue["issue"]["user"]["login"], :org => issue["repository"]["owner"]["login"], :date => DateTime.now, :url => issue["issue"]["html_url"] })
       end
     end
   end

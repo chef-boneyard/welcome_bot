@@ -4,6 +4,8 @@ module WelcomeBot
   class DynamoDB
     require "aws-sdk"
     require "date"
+    require "uri"
+    require "json"
 
     def self.connection
       @@conn ||= Aws::DynamoDB::Client.new
@@ -13,26 +15,32 @@ module WelcomeBot
       connection.list_tables.table_names.include?(table_class.name.gsub("::", "_"))
     end
 
-    # add the record to dynamodb, but don't overwrite records with an older date.
-    # this allows you to run setup multiple times with multiple orgs and keep
-    # the oldest PR / Issue a user filed.
-    def self.add_record(table_class, record)
-      old_record = table_class.find(username: record[:username])
-      if old_record && (record[:interaction_date].to_datetime >= old_record.interaction_date)
-        puts "#{record[:username]} interaction date not older than previous interaction date of #{old_record.interaction_date}. Keeping the old record."
-      else
-        puts "Adding record #{record} to #{table_class.name.gsub('::', '_')}"
-        record = table_class.new(record)
-        record.save!(opts = { force: true })
-      end
-    end
+    # add the record to dynamodb. Examines the interactions field and adds in new orgs as necessary
+    #record_data format: { :username => string,
+    #                      :org => string,
+    #                      :date => datetime,
+    #                      :url => string }
+    def self.add_record(table_class, record_data)
+      db_record = table_class.find(username: record_data[:username])
 
-    def self.add_record_unless_present(table_class, record)
-      if table_class.find(username: record[:username])
-        puts "Record for user #{record[:username]} already exists in #{table_class.name.gsub('::', '_')}. Doing nothing."
+      # load the existing interactions value from the record or use an empty hash
+      interactions = JSON.parse(db_record.interactions) rescue {}
+
+      # add the values passed in
+      interactions[record_data[:org]] = {}
+      interactions[record_data[:org]][:url] = record_data[:url]
+      interactions[record_data[:org]][:date] = record_data[:date]
+
+      # update the existing record if it was returned above else create a record
+      if db_record
+        db_record.interactions = interactions.to_json
       else
-        add_record(table_class, record)
+        db_record = table_class.new({ :username => record_data[:username],
+                                      :interactions => interactions.to_json })
       end
+
+      db_record.save!(opts = { force: true })
+      puts "Updated record for #{record_data[:username]} with #{record_data[:org]} org interaction"
     end
 
     def self.return_all_records(table_class)
@@ -40,8 +48,7 @@ module WelcomeBot
       table_class.scan.select do |val|
         users << {
           "username" => val.username,
-          "interaction_date" => val.interaction_date,
-          "url" => val.url,
+          "interactions" => val.interactions,
         }
       end
       users
