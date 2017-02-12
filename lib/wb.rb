@@ -43,10 +43,9 @@ module WelcomeBot
 
       # if we already have a record then log and do nothing
       if WelcomeBot::DynamoDB.record_exists?(WelcomeBot::Contributors, issue["issue"]["user"]["login"], issue["repository"]["owner"]["login"])
-        puts "Previous interaction found for user #{issue["issue"]["user"]["login"]} against #{issue["repository"]["owner"]["login"]}. Skipping."
+        puts "Previous interaction found for user #{issue["issue"]["user"]["login"]} on #{issue["repository"]["owner"]["login"]} org. Skipping."
       else
-        puts "Processing #{issue["pull_request"]["html_url"]}"
-        WelcomeBot::Github.add_comment(issue["pull_request"]["head"]["repo"]["full_name"], issue["number"], WelcomeBot::Config.pr_welcome_message)
+        WelcomeBot::Github.add_comment(issue["pull_request"]["head"]["repo"]["full_name"], issue["issue"]["number"], WelcomeBot::Config.pr_welcome_message)
         WelcomeBot::DynamoDB.add_record(WelcomeBot::Contributors, { :username => issue["pull_request"]["user"]["login"], :org => issue["repository"]["owner"]["login"], :date => DateTime.now, :url => issue["pull_request"]["html_url"] })
       end
     end
@@ -60,10 +59,9 @@ module WelcomeBot
 
       # if we already have a record then log and do nothing
       if WelcomeBot::DynamoDB.record_exists?(WelcomeBot::Reporters, issue["issue"]["user"]["login"], issue["repository"]["owner"]["login"])
-        puts "Previous interaction found for user #{issue["issue"]["user"]["login"]} against #{issue["repository"]["owner"]["login"]}. Skipping."
+        puts "Previous interaction found for user #{issue["issue"]["user"]["login"]} on #{issue["repository"]["owner"]["login"]} org. Skipping."
       else
-        puts "Processing #{issue["issue"]["html_url"]}"
-        WelcomeBot::Github.add_comment(issue["repository"]["full_name"], issue["number"], WelcomeBot::Config.issue_welcome_message)
+        WelcomeBot::Github.add_comment(issue["repository"]["full_name"], issue["issue"]["number"], WelcomeBot::Config.issue_welcome_message)
         WelcomeBot::DynamoDB.add_record(WelcomeBot::Reporters, { :username => issue["issue"]["user"]["login"], :org => issue["repository"]["owner"]["login"], :date => DateTime.now, :url => issue["issue"]["html_url"] })
       end
     end
