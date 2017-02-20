@@ -15,13 +15,20 @@ module WelcomeBot
       connection.list_tables.table_names.include?(table_class.name.gsub("::", "_"))
     end
 
+    def self.gh_welcome_message(org, type)
+      messages = WelcomeBot::Messages.find(org: org)["#{type}_message".to_sym]
+    rescue
+      puts "Could not find #{type} message for org #{org}. Using default message instead"
+      type == "pr" ? WelcomeBot::Config.pr_welcome_message : WelcomeBot::Config.issue_welcome_message
+    end
+
     def self.record_exists?(table_class, username, org)
       db_record = table_class.find(username: username)
       return true if db_record && JSON.parse(db_record.interactions)[org]
     end
 
     # add the record to dynamodb. Examines the interactions field and adds in new orgs as necessary
-    #record_data format: { :username => string,
+    # record_data format: { :username => string,
     #                      :org => string,
     #                      :date => datetime,
     #                      :url => string }

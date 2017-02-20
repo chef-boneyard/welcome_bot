@@ -10,7 +10,7 @@ require "wb"
 
 def create_tables
   # create the tables unless they already exist
-  [WelcomeBot::Contributors, WelcomeBot::Reporters].each do |table|
+  [WelcomeBot::Contributors, WelcomeBot::Reporters, WelcomeBot::Messages].each do |table|
     WelcomeBot::DynamoDB.run_migration(table)
   end
 end
@@ -24,7 +24,7 @@ end
 def prompt_user(message)
   print message + " (y/n) "
   response = gets
-  return true if response.chomp == 'y'
+  return true if response.chomp == "y"
   false
 end
 
@@ -44,3 +44,5 @@ if prompt_user("Would you like to backfill existing PRs / Issues into the Dynamo
   add_users_to_table(pr_users, WelcomeBot::Contributors, org)
   add_users_to_table(issue_users, WelcomeBot::Reporters, org)
 end
+
+puts "\nSetup is complete. You'll need to define messages in the WelcomeBot_Messages table for each Github org. See the readme for examples."
