@@ -1,4 +1,4 @@
 source "https://rubygems.org"
 
-# Specify your gem's dependencies in dcob.gemspec
+# Specify your gem's dependencies in welcome_bot.gemspec
 gemspec
