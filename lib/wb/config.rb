@@ -3,7 +3,6 @@ module WelcomeBot
     CONFIG_OPTIONS = %w{
       github_access_token
       github_secret_token
-      github_org
       pr_welcome_message
       issue_welcome_message
       aws_region
