@@ -22,6 +22,7 @@ module WelcomeBot
       return halt 500, "Signatures didn't match!" unless Rack::Utils.secure_compare(check_signature, request_signature)
     end
 
+    set :bind, '0.0.0.0'
     set :port, WelcomeBot::Config.port.to_i
 
     set(:event_type) do |type|
