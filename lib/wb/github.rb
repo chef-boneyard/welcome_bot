@@ -17,6 +17,7 @@ module WelcomeBot
       connection = Octokit::Client.new(access_token: WelcomeBot::Config.github_access_token)
       connection.auto_paginate = true
       connection.middleware = faraday
+      connection.per_page = 100
       connection
     end
 
