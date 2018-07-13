@@ -16,8 +16,8 @@ module WelcomeBot
     end
 
     def self.gh_welcome_message(org, type)
-      messages = WelcomeBot::Messages.find(org: org)["#{type}_message".to_sym]
-    rescue
+      WelcomeBot::Messages.find(org: org).send("#{type}_message".to_sym)
+    rescue NoMethodError
       puts "Could not find #{type} message for org #{org}. Using default message instead"
       type == "pr" ? WelcomeBot::Config.pr_welcome_message : WelcomeBot::Config.issue_welcome_message
     end
