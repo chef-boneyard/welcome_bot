@@ -40,14 +40,14 @@ module WelcomeBot
       # we only care about issue open events
       return unless issue["action"] == "opened"
 
-      puts "Processing #{issue["issue"]["html_url"]}"
+      puts "Processing #{issue["pull_request"]["html_url"]}"
 
       # if we already have a record then log and do nothing
-      if WelcomeBot::DynamoDB.record_exists?(WelcomeBot::Contributors, issue["issue"]["user"]["login"], issue["repository"]["owner"]["login"])
-        puts "Previous interaction found for user #{issue["issue"]["user"]["login"]} on #{issue["repository"]["owner"]["login"]} org. Skipping."
+      if WelcomeBot::DynamoDB.record_exists?(WelcomeBot::Contributors, issue["pull_request"]["user"]["login"], issue["repository"]["owner"]["login"])
+        puts "Previous interaction found for user #{issue["pull_request"]["user"]["login"]} on #{issue["repository"]["owner"]["login"]} org. Skipping."
       else
         WelcomeBot::Github.add_comment(issue["pull_request"]["head"]["repo"]["full_name"],
-                                       issue["issue"]["number"],
+                                       issue["pull_request"]["number"],
                                        WelcomeBot::DynamoDB.gh_welcome_message(issue["repository"]["owner"]["login"], "pr"))
         WelcomeBot::DynamoDB.add_record(WelcomeBot::Contributors,
                                         { username: issue["pull_request"]["user"]["login"],
