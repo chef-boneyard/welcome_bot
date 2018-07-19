@@ -16,6 +16,29 @@ WelcomeBot functions using either Github repo level webhook, or org level webhoo
 
 ![setup image](https://raw.githubusercontent.com/chef/welcome_bot/master/setup.png)
 
+## Running as a Service
+
+You probably want to run the bot under an init system that can handle logging and starting the service back up if it dies. Here's a sample systemd unit file to run the app via bundler
+
+```
+[Unit]
+Description=WelcomeBot Github bot
+After=network.target
+
+[Service]
+Type=simple
+TimeoutSec=30
+RestartSec=15s
+WorkingDirectory=/home/ubuntu/welcome_bot/
+ExecStart=/bin/bash -lc 'bundle exec bin/welcome_bot'
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+This assumes you're running Ubuntu, the repo is checked out `/home/ubuntu/welcome_bot/` and bundle install has already been performed in the repo directory.
+
 ## License
 
 - Author:: Tim Smith ([tsmith@chef.io](mailto:tsmith@chef.io))
