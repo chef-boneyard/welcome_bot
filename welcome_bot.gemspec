@@ -29,5 +29,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency "aws-sdk", "~> 2.0"
   spec.add_dependency "aws-record", "~> 1.0"
   spec.add_dependency "activerecord", ">= 5", "< 7"
-  spec.add_dependency "sinatra", "~> 1.0"
+  spec.add_dependency "sinatra", ">= 1", "< 3"
 end
