@@ -2,7 +2,7 @@ pkg_name=welcome_bot
 pkg_origin=chef
 pkg_version=_computed_in_a_function_below_
 pkg_description="This is a github bot to ensure new users who submit PRs or issues
-  to your org are greated with a special welcome message that includes getting
+  to your org are greeted with a special welcome message that includes getting
   started help."
 pkg_upstream_url=https://github.com/chef/welcome_bot
 pkg_maintainer="Chef Community Engineering Team <community@chef.io>"
