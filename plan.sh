@@ -55,8 +55,8 @@ do_build() {
   export BUNDLE_SILENCE_ROOT_WARNING=1 GEM_PATH
   GEM_PATH="$(pkg_path_for core/bundler)"
 
+  bundle config set --local without development
   bundle install --jobs "$(nproc)" --retry 5 --standalone \
-    --without development \
     --path "bundle" \
     --binstubs
 }
